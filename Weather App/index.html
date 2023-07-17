@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="weathericon.jpg" type="image/x-icon">
+    <title>Weather App</title>
+</head>
+
+<body>
+    <div class="container-1">
+        <header>
+            <h1>Weather App</h1>
+            <div>
+                <input type="text" id="input" placeholder="Enter City Name....">
+                <button id="search">Search</button>
+            </div>
+        </header>
+        <div class="error">
+            <img src="404.webp">
+        </div>
+        <div class="container">
+
+            <section id="main">
+                <div class="weather">
+                    <h2 id="city">Delhi , IN</h2>
+                    <div class="temp_box">
+                        <img src="weathericon.jpg" id="img">
+                        <p id="temprature">26 °C</p>
+                        <img src="wind.jpg">
+                        <p id="wind"></p>
+                    </div>
+                    <span id="cloud">Broken Clouds</span>
+                </div>
+                <div class="divider"></div>
+                <div class="forecast">
+                    <p class="cast-header">Upcoming Forecast</p>
+                    <div class="templist">
+                        <div class="next">
+                            <div>
+                                <p id="time"></p>
+                                <p id="temprature"></p>
+                            </div>
+                            <p id="description"></p>
+                        </div>
+
+
+                    </div>
+                </div>
+            </section>
+
+            <div class="forcast">
+                <div id="divider"></div>
+                <p class="cast-header">Next 4 Days Forecast</p>
+                <div class="week">
+                    <div class="day">
+                        <p class="date">Sun Jul 03 2022</p>
+                        <p>32 °C / 26 °C</p>
+                        <p class="description">Overcast Clouds</p>
+                    </div>
+                    <div class="day">
+                        <p class="date">Sun Jul 03 2022</p>
+                        <p>32 °C / 26 °C</p>
+                        <p class="description">Overcast Clouds</p>
+                    </div>
+                    <div class="day">
+                        <p class="date">Sun Jul 03 2022</p>
+                        <p>32 °C / 26 °C</p>
+                        <p class="description">Overcast Clouds</p>
+                    </div>
+                    <div class="day">
+                        <p class="date">Sun Jul 03 2022</p>
+                        <p>32 °C / 26 °C</p>
+                        <p class="description">Overcast Clouds</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="js/weather.js" type="JavaScript"></script> -->
+    <script>
+        const apiKey = "206fa786a9ba3fb6d2df8550eadf87a4";
+const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const urlcast = "http://api.openweathermap.org/data/2.5/forecast?q=";
+
+const searchBox = document.querySelector("#input");
+const searchBtn = document.querySelector("#search");
+const weatherIcon = document.querySelector("#img");
+// console.log(searchBox);
+// console.log(searchBtn);
+
+async function checkWeather(city) {
+    const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+    const response_forcast = await fetch(urlcast + city + `&appid=${apiKey}`);
+
+    if (response.status == 404) {
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".container").style.display = "none";
+
+    }
+    if (response_forcast.status == 404) {
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".container").style.display = "none";
+
+    }
+    else {
+        var data = await response.json();
+        var forcast = await response_forcast.json();
+        // console.log(searchBox);
+        // console.log(forcast);
+
+        document.getElementById('city').innerText = data.name + ' , ' + data.sys.country;
+        document.getElementById('temprature').innerText = Math.floor(data.main.temp) + '°C';
+        document.getElementById('wind').innerText = data.wind.speed + ' m/s';
+        document.getElementById('cloud').innerText = data.weather[0].description;
+
+        if (data.weather[0].main == "Clouds") {
+            weatherIcon.src = "cloud.jpg"
+        }
+        else if (data.weather[0].main == "Clear") {
+            weatherIcon.src = "clear.jpg"
+        }
+        else if (data.weather[0].main == "Rain") {
+            weatherIcon.src = "rain.jpg"
+        }
+        else if (data.weather[0].main == "Drizzle") {
+            weatherIcon.src = "drizzle.jpg"
+        }
+        else if (data.weather[0].main == "Mist") {
+            weatherIcon.src = "mist.jpg"
+        }
+        document.querySelector('.templist').innerHTML = '';
+        for(let i=0; i<5; i++) {
+            var date = new Date(forcast.list[i].dt*1000);
+            let hour = document.createElement('div');
+            hour.setAttribute('class','next');
+    
+            let div = document.createElement('div');
+            let time = document.createElement('p');
+            time.setAttribute('class','time');
+            time.innerText = (date.toLocaleTimeString(undefined,'Asia/Kolkata')).replace('.00','');
+            let temp = document.createElement('p');
+            temp.innerText = Math.floor(forcast.list[i].main.temp_max - 273) + '°C' + ' / ' + Math.floor(forcast.list[i].main.temp_min - 273) + '°C';
+            div.appendChild(time);
+            div.appendChild(temp);
+    
+            let description = document.createElement('p');
+            description.setAttribute('class','description');
+            description.innerText = forcast.list[i].weather[0].description;
+            hour.appendChild(div);
+            hour.appendChild(description);
+    
+            document.querySelector('.templist').appendChild(hour);
+        }
+
+        document.querySelector('.week').innerHTML = '';
+
+        for(let i = 0; i < forcast.list.length; i += 10) {
+            // console.log(forcast.list[i]);
+
+            let div = document.createElement('div');
+            div.setAttribute('class','day');
+            let day = document.createElement('p');
+            day.setAttribute('class','date');
+            let temp = document.createElement('p');
+            temp.setAttribute('class','temp');
+            let description = document.createElement('p');
+            description.setAttribute('class','description');
+
+            day.innerText = new Date(forcast.list[i].dt * 1000).toDateString(undefined,'Asia/Kolkata');
+            div.appendChild(day);
+
+            temp.innerText = Math.floor(forcast.list[i].main.temp_max - 273) + '°C' + ' / ' + Math.floor(forcast.list[i].main.temp_min - 273) + '°C';
+            div.appendChild(temp);
+
+            description.innerText = forcast.list[i].weather[0].description;
+            div.appendChild(description);
+
+            document.querySelector('.week').appendChild(div);
+
+        }
+
+        document.querySelector(".container").style.display = "block";
+        document.querySelector(".error").style.display = "none";
+    }
+
+
+}
+
+searchBtn.addEventListener("click", () => {
+    checkWeather(searchBox.value);
+})
+checkWeather();
+    </script>
+</body>
+
+</html>
